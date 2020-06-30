@@ -4,6 +4,7 @@ import (
 	"encoding/xml"
 	"fmt"
 	"net/http"
+	"regexp"
 
 	"github.com/antchfx/xmlquery"
 	"github.com/gocolly/colly"
@@ -13,6 +14,20 @@ type article struct {
 	XMLName xml.Name `xml:"article"`
 	Subject string   `xml:"subject"`
 	Body    string   `xml:"body"`
+}
+
+func extractHeadings(html string) []string {
+	before := `&lt;br/&gt;&lt;br/&gt;&lt;b&gt;`
+	after := `&lt;/b&gt;&lt;br/&gt;&lt;br/&gt;`
+	r := regexp.MustCompile(fmt.Sprintf(`%s(?P<heading>.*?)%s`, before, after))
+	matches := r.FindAllStringSubmatch(html, -1)
+	headings := make([]string, len(matches))
+	if matches != nil {
+		for i, match := range matches {
+			headings[i] = match[1]
+		}
+	}
+	return headings
 }
 
 func main() {
@@ -34,6 +49,12 @@ func main() {
 		xml.Unmarshal([]byte(d.OutputXML(true)), &a)
 		fmt.Println(a.Subject)
 		fmt.Println(a.Body)
+
+		// &lt;br/&gt;&lt;br/&gt;&lt;br/&gt;&lt;b&gt;Characters&lt;/b&gt;&lt;br/&gt;&lt;br/&gt;
+		for _, heading := range extractHeadings(a.Body) {
+			fmt.Println(heading)
+		}
+		fmt.Println("what?")
 	})
 
 	var url string

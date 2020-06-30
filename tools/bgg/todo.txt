@@ -1,0 +1,9 @@
+generate TOC
+
+fix the weird <pre> artifacts
+
+add nice header
+
+make spoilers hidden by default
+
+implement other markup
